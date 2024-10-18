@@ -50,11 +50,6 @@ export default factories.createCoreController(
       const { documentId } = ctx.params;
 
       try {
-        // get the quote by it's document ID
-        const quote = await strapi
-          .documents("api::quote.quote")
-          .findOne({ documentId });
-
         // Retrieve the current user from the context's state
         const user = ctx.state.user;
 
