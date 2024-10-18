@@ -1,24 +1,31 @@
+// src/api/quote/policies/is-owner.ts
+
 /**
  * is-owner policy
  */
 
-export default (policyContext, config, { strapi }) => {
+import { errors } from "@strapi/utils";
+const { PolicyError } = errors;
+
+export default async (policyContext, config, { strapi }) => {
   // Add your own logic here.
   strapi.log.info("In is-owner policy.");
 
+  // Get the user from the policy context
   const user = policyContext.state.user;
-  const { documentId } = policyContext.request.params;
+  // Get the documentId from the request params
+  const { id: documentId } = policyContext.request.params;
 
-  console.log({
-    user,
-    documentId,
-  });
+  // Find the quote with the documentId and populate the creator relation
+  const quote = await strapi
+    .documents("api::quote.quote")
+    .findOne({ documentId, populate: ["creator"] });
 
-  const canDoSomething = true;
-
-  if (canDoSomething) {
+  // If the user is the creator of the quote, allow the action
+  if (user.documentId == quote.creator.documentId) {
     return true;
   }
 
-  return false;
+  // Otherwise, throw an error
+  throw new PolicyError("User not allowed to perform this action");
 };
